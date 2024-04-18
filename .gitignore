@@ -1,0 +1,8 @@
+vendor/
+.env
+composer.lock
+*.pdf
+*.xlsx
+*.csv
+*.docx
+*.jpg
