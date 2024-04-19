@@ -28,13 +28,15 @@ class ManageRequest
             
             
             if ($endpoint !== null && $login !== null && $password !== null && $storage !== null) {
-                print_r($_POST);
                 //abre a conexao 
                 $objConn = new DataBaseConnection();
                 $connection = $objConn->getConexao();
+              
                 $manageStorage = new ManageStorageServer($connection);
                 $manageStorage->setStorage($storage, $endpoint, $login, $password);
                 $objConn->fecharConexao();
+            
+               
             } else {
                 $this->msg_error(400, "Parâmetros incorretos");
             }

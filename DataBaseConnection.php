@@ -1,43 +1,70 @@
 <?php
+
 namespace db;
+
 require 'vendor/autoload.php';
+
 use Dotenv\Dotenv;
+use PDO;
+use PDOException;
 
 class DataBaseConnection
 {
-    private $conexao;
+    private $pdoConnection;
+    private $host;
+    private $port;
+    private $user;
+    private $password;
+    private $dbname;
+    private $database_type;
+    private $dns;
 
     public function __construct()
     {
         $dotenv = Dotenv::createUnsafeImmutable(__DIR__);
         $dotenv->load();
-        $host = getenv('PG_HOST');
-        $port = getenv('PG_PORT');
-        $user = getenv('PG_USER');
-        $password = getenv('PG_PASS');
-        $dbname = getenv('PG_NAME');
-        $keepalive_idle = 300;
-        /*desabilita a exibição de erros em produção, remover quando estiver no desenvolvimento*/
-       // error_reporting(E_ERROR | E_PARSE);
-      //  ini_set('display_errors', 'Off');
-
-        $this->conexao =  pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password keepalives_idle=$keepalive_idle");
-
-        if (!$this->conexao) {
-            die("Erro ao conectar na base de dados: " . pg_last_error($this->conexao));
-        }
+        $this->host = getenv('DB_HOST');
+        $this->port = getenv('DB_PORT');
+        $this->user = getenv('DB_USER');
+        $this->password = getenv('DB_PASS');
+        $this->dbname = getenv('DB_NAME');
+        $this->database_type = strtolower(trim(getenv('DB_TYPE')));
+        $this->selectDatabaseConnection();
     }
 
+    public function selectDatabaseConnection()
+    {
+
+        switch ($this->database_type) {
+            case 'mysql':
+                $this->dns = "mysql:host=$this->host;port=$this->port;dbname=$this->dbname;charset=utf8";
+                break;
+            case 'postgresql':
+                $this->dns = "pgsql:host=$this->host;port=$this->port;dbname=$this->dbname;charset=utf8";
+                break;
+            case 'oracle':
+                $this->dns = "oci:dbname=yoursid";
+                break;
+            default:
+                $this->dns = "pgsql:host=$this->host;dbname=$this->dbname";
+        }
+    }
     public function getConexao()
     {
 
-        return $this->conexao;
+        try {
+            $this->pdoConnection = new PDO($this->dns, $this->user, $this->password);
+        } catch (PDOException $e) {
+            die('Falha na conexão: ' . $e->getMessage());
+        }
+        return $this->pdoConnection;
     }
 
     public function fecharConexao()
     {
-        if ($this->conexao) {
-            pg_close($this->conexao);
+        if ($this->pdoConnection) {
+            $this->pdoConnection = null;
+            //echo "Fechou a conexao com o postgres";          
         }
     }
 }

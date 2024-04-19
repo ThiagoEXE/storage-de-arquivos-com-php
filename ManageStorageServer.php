@@ -15,9 +15,15 @@ class ManageStorageServer
         $listOfStorage = $this->alterStorage();
 
         if ($listOfStorage > 0) {
-            $sql = "UPDATE STORAGE_PROVIDER SET storage=$1, endpoint=$2, login=$3, password=$4";
-            $result = pg_query_params($this->connection, $sql, array($storage, $endpoint, $login, $password));
-            $affectRows = pg_affected_rows($result);
+            $sql = "UPDATE STORAGE_PROVIDER SET storage= :storage, endpoint= :endpoint, login= :login, password= :password";
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute([
+                ':storage'  => $storage,
+                ':endpoint' => $endpoint,
+                ':login'    => $login,
+                ':password' => $password
+            ]);
+            $affectRows = $stmt->rowCount();
 
             if ($affectRows > 0) {
                 $this->message_front(200, "Provedor de armazenamento externo alterado com sucesso!");
@@ -28,9 +34,16 @@ class ManageStorageServer
         } else {
 
             $sql = "INSERT INTO STORAGE_PROVIDER(storage, endpoint, login, password) VALUES
-                 ($1, $2, $3, $4)";
-            $result = pg_query_params($this->connection, $sql, array($storage, $endpoint, $login, $password));
-            $affectRows = pg_affected_rows($result);
+                 (:storage, :endpoint, :login, :password)";
+            
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute([
+                ':storage'  => $storage,
+                ':endpoint' => $endpoint,
+                ':login'    => $login,
+                ':password' => $password
+            ]);
+            $affectRows = $stmt->rowCount();
 
             if ($affectRows > 0) {
                 $this->message_front(200, "Provedor de armazenamento externo cadastrado com sucesso!");
@@ -43,8 +56,8 @@ class ManageStorageServer
     public function alterStorage()
     {
         $sql = "SELECT STORAGE FROM STORAGE_PROVIDER";
-        $query = pg_query($this->connection, $sql);
-        $result = pg_num_rows($query);
+        $stmt = $this->connection->query($sql);
+        $result = $stmt->rowCount();
 
         return $result;
     }
