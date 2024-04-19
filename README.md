@@ -13,4 +13,4 @@ A aplicação conta com um arquivo index.php que permite cadastrar o proverdor c
 
 Arquitetura de armazenamento:
 
-![Untitled](Arquitetura-cloud-storage.jpeg)
+![Untitled](Arquitetura-storage.jpeg)
